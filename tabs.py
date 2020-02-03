@@ -5,7 +5,7 @@ import plotly.graph_objs as go
 import pandas as pd
 import seaborn as sns
 import dash_table
-
+from dash.dependencies import Input, Output, State
 
 def generate_table(dataframe, page_size=10):
     return dash_table.DataTable(
@@ -19,7 +19,6 @@ def generate_table(dataframe, page_size=10):
         page_current=0,
         page_size=page_size,
     )
-
 
 tips = sns.load_dataset('tips')
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -91,7 +90,8 @@ app.layout = html.Div(
                                     dcc.Dropdown(value='',
                                                  id='filter-smoker',
                                                  options=[{'label': 'No','value': 'No'}, 
-                                                 {'label': 'Yes','value': 'Yes'}])
+                                                 {'label': 'Yes','value': 'Yes'},
+                                                 {'label': 'None','value': ''}])
                                 ],
                                          className='col-3'),
                                 
@@ -100,7 +100,8 @@ app.layout = html.Div(
                                     dcc.Dropdown(value='',
                                                  id='filter-sex',
                                                  options=[{'label': 'Female','value': 'Female'}, 
-                                                 {'label': 'Male','value': 'Male'}])
+                                                 {'label': 'Male','value': 'Male'},
+                                                 {'label': 'None','value': ''}])
                                 ],
                                          className='col-3'),
                                 
@@ -108,14 +109,20 @@ app.layout = html.Div(
                                     html.P('Day'),
                                     dcc.Dropdown(value='',
                                                  id='filter-day',
-                                                 options=[{'label': i,'value': i} for i in tips['day'].unique()])
+                                                 options=[{'label': 'Thur','value': 'Thur'}, 
+                                                 {'label': 'Fri','value': 'Fri'},                     
+                                                 {'label': 'Sat','value': 'Sat'},
+                                                 {'label': 'Sun','value': 'Sun'},
+                                                 {'label': 'None','value': ''}])
                                 ],
                                          className='col-3'),
                                 html.Div([
                                     html.P('Time'),
                                     dcc.Dropdown(value='',
                                                  id='filter-time',
-                                                 options=[{'label': i,'value': i} for i in tips['time'].unique()])
+                                                 options=[{'label': 'Lunch','value': 'Lunch'}, 
+                                                 {'label': 'Dinner','value': 'Dinner'},
+                                                 {'label': 'None','value': ''}])
                                 ],
                                          className='col-3')
 
@@ -152,5 +159,60 @@ app.layout = html.Div(
         'margin': '0 auto'
     })
 
+@app.callback(
+    Output(component_id = 'div-table', component_property = 'children'),
+    [Input(component_id = 'filter', component_property = 'n_clicks')],
+    [State(component_id = 'filter-row', component_property = 'value'), 
+    State(component_id = 'filter-smoker', component_property = 'value'),
+    State(component_id = 'filter-sex', component_property = 'value'),
+    State(component_id = 'filter-day', component_property = 'value'),
+    State(component_id = 'filter-time', component_property = 'value')]
+)
+def update_table(n_clicks,row, smoker, sex, day, time):
+    tips = sns.load_dataset('tips')
+    # if smoker == '' and sex == '' and day == '' and time == '':
+    #     children = [generate_table(tips, page_size = row)]
+    # elif smoker == '' and sex == '' and day == '' and time != '':
+    #     children = [generate_table(tips[tips['time'] == time], page_size = row)]
+    # elif smoker == '' and sex == '' and day != '' and time == '':
+    #     children = [generate_table(tips[tips['day'] == day], page_size = row)]
+    # elif smoker == '' and sex != '' and day == '' and time == '':
+    #     children = [generate_table(tips[tips['sex'] == sex], page_size = row)]
+    # elif smoker != '' and sex == '' and day == '' and time == '':
+    #     children = [generate_table(tips[tips['smoker'] == smoker], page_size = row)]              
+    # elif smoker == '' and sex == '' and day != '' and time != '':
+    #     children = [generate_table(tips[(tips['time'] == time) & (tips['day'] == day)], page_size = row)]
+    # elif smoker == '' and sex != '' and day == '' and time != '':
+    #     children = [generate_table(tips[(tips['time'] == time) & (tips['sex'] == sex)], page_size = row)]
+    # elif smoker != '' and sex == '' and day == '' and time != '':
+    #     children = [generate_table(tips[(tips['time'] == time) & (tips['smoker'] == smoker)], page_size = row)]
+    # elif smoker == '' and sex != '' and day != '' and time== '':
+    #     children = [generate_table(tips[(tips['day'] == day) & (tips['sex'] == sex)], page_size = row)]
+    # elif smoker != '' and sex == '' and day != '' and time== '':
+    #     children = [generate_table(tips[(tips['day'] == day) & (tips['smoker'] == smoker)], page_size = row)]
+    # elif smoker != '' and sex != '' and day == '' and time == '':
+    #     children = [generate_table(tips[(tips['smoker'] == smoker) & (tips['sex'] == sex)], page_size = row)]                  
+    # elif smoker == '' and sex != '' and day != '' and time != '':
+    #     children = [generate_table(tips[(tips['time'] == time) & (tips['day'] == day) & (tips['sex'] == sex)], page_size = row)]
+    # elif smoker != '' and sex == '' and day != '' and time != '':
+    #     children = [generate_table(tips[(tips['time'] == time) & (tips['day'] == day) & (tips['smoker'] == smoker)], page_size = row)]
+    # elif smoker != '' and sex != '' and day == '' and time != '':
+    #     children = [generate_table(tips[(tips['time'] == time) & (tips['sex'] == sex) & (tips['smoker'] == smoker)], page_size = row)]
+    # elif smoker != '' and sex != '' and day != '' and time == '':
+    #     children = [generate_table(tips[(tips['sex'] == sex) & (tips['day'] == day) & (tips['smoker'] == smoker)], page_size = row)]                               
+    # else:
+    #     children = [generate_table(tips[(tips['sex'] == sex) & (tips['day'] == day) & (tips['smoker'] == smoker) & (tips['time'] == time)], page_size = row)]               
+    # return children 
+    if smoker != '':
+        tips = tips[tips['smoker'] == smoker]
+    if sex != '':
+        tips = tips[tips['sex'] == sex]
+    if day != '':
+        tips = tips[tips['day'] == day]
+    if time != '':
+        tips = tips[tips['time'] == time]
+    children = [generate_table(tips, page_size = row)]
+    return children
+    
 if __name__ == '__main__':
     app.run_server(debug=True)
